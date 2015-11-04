@@ -1,0 +1,88 @@
+<?php
+
+class Youtube {
+
+  // Get Video ID
+  function get_id($url) {
+    preg_match("/^(?:http(?:s)?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|youtube\.com\/(?:(?:watch)?\?(?:.*&)?v(?:i)?=|(?:embed|v|vi|user)\/))([^\?&\"'>]+)/", $url, $matches);
+    return $matches[1];
+  }
+
+  // Get Video <EMBED>
+  function embed($id_or_url, $options=NULL) {
+
+    $attrs = '';
+
+    // URL Check
+    $id = stripos( $id_or_url, '//' )>0? SELF::get_id($id_or_url) : $id_or_url ;
+
+    if(!$id)
+      return 'Video ID not found';
+
+    $options = array_merge([
+      'width' => '420',
+      'height' => '315',
+      'frameborder' => '0',
+      'allowfullscreen' => 'true',
+    ],$options);
+
+    foreach( $options as $option=>$value )
+      $attrs .= sprintf('%s="%s" ', $option, $value);
+
+    return "<iframe src=\"http://www.youtube.com/embed/{$id}\" {$attrs}></iframe>";
+  }
+
+  // Get URL video thumbnail
+
+  // $size = 'mq' - medium
+  // $size = 'hq' - high
+  // $size = 'sd' - standard
+
+  function thumbnail_url($id_or_url, $size='') {
+
+    // URL Check
+    $id = stripos( $id_or_url, '//' )>0? SELF::get_id($id_or_url) : $id_or_url ;
+
+    if( !$id )
+      return 'Video ID not found';
+
+    return "https://i1.ytimg.com/vi/{$id}/{$size}default.jpg";
+  }
+
+  // Get Youtube thumbnail <IMG>
+
+  // $size = 'mq' - medium
+  // $size = 'hq' - high
+  // $size = 'sd' - standard
+
+  function thumbnail($thumb_url, $size='', $options=array()) {
+
+    $attrs = '';
+
+    if( stripos( $thumb_url, '.jpg' )===FALSE ) {
+
+      $thumb_url = SELF::thumbnail_url($thumb_url, $size);
+
+      if( !$thumb_url )
+        return 'Thumbnail not found';
+    }
+
+    // $options = array_merge([],$options);
+
+    foreach( $options as $option=>$value )
+      $attrs .= sprintf('%s="%s" ', $option, $value);
+
+    return "<img src=\"{$thumb_url}\" {$attrs} />";
+  }
+
+  // Alias to thumb
+  function thumb($thumb_url, $size='', $options=array()) {
+    return thumbnail($thumb_url, $size, $options);
+  }
+
+  // Alias to thumbnail_url
+  function thumb_url($id_or_url, $size='') {
+    return thumbnail_url($id_or_url, $size);
+  }
+
+}
